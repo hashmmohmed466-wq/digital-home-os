@@ -21,33 +21,36 @@
 </head>
 <body class="bg-darkBg text-white font-sans min-h-screen p-6">
     <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-3xl font-bold text-cyanAccent mb-2">منزل الرقمي (Digital Home OS)</h1>
-            <p class="text-gray-400">لوحة التحكم الذكية — إدارة المخزون، التعليم، والصحة</p>
+        <header class="flex justify-between items-center mb-10 border-b border-gray-800 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-cyanAccent mb-1">منزل الرقمي (Digital Home OS)</h1>
+                <p class="text-gray-400">لوحة التحكم الذكية — منصة هاشم TV</p>
+            </div>
+            <!-- زر الإشعارات الحية مع عداد التنبيهات -->
+            <div class="relative">
+                <button onclick="toggleNotifications()" class="bg-gray-800 border border-gray-700 p-3 rounded-full hover:bg-gray-700 transition relative">
+                    🔔
+                    <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+            </div>
         </header>
 
-        <!-- صندوق الإشعارات الفورية -->
-        <div id="notificationBanner" class="hidden bg-cyanAccent text-darkBg px-4 py-3 rounded-xl font-bold mb-6 flex justify-between items-center shadow-lg transition-all duration-300">
-            <span id="notificationText">🔔 تنبيه: تم إضافة عناصر جديدة تتطلب مراجعتك!</span>
-            <button onclick="dismissNotification()" class="text-darkBg font-extrabold text-sm bg-white bg-opacity-50 px-2 py-1 rounded hover:bg-opacity-80">تجاهل</button>
-        </div>
-
-        <!-- لوحة الإدخال السريع -->
+        <!-- لوحة الإدخال السريع مع الإرسال الفوري -->
         <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-xl mb-8">
-            <h2 class="text-xl font-semibold text-goldAccent mb-4">➕ إضافة عنصر جديد</h2>
+            <h2 class="text-xl font-semibold text-goldAccent mb-4">⚡ إرسال طلب أو تنبيه فوري</h2>
             <form id="itemForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <select id="itemCategory" class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
                     <option value="المطبخ والمخزون">🛒 المطبخ والمخزون</option>
                     <option value="المدرسة والتعليم">📚 المدرسة والتعليم</option>
                     <option value="الصحة والرفاهية">💊 الصحة والرفاهية</option>
                 </select>
-                <input type="text" id="itemName" placeholder="اسم العنصر (مثال: حليب طازج - محمد)" required class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
-                <button type="submit" class="bg-cyanAccent text-darkBg font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition">إضافة للنظام</button>
+                <input type="text" id="itemName" placeholder="اسم العنصر أو الطلب (مثال: حليب طازج)" required class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
+                <button type="submit" class="bg-cyanAccent text-darkBg font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition shadow-lg">إرسال إشعار للنظام 🚀</button>
             </form>
         </div>
 
         <!-- الأقسام الرئيسية -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="dashboardContainer">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- قسم المطبخ -->
             <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
                 <h3 class="text-lg font-bold text-cyanAccent mb-3">🛒 المطبخ والمخزون</h3>
@@ -64,23 +67,28 @@
                 <ul id="list_health" class="space-y-2 text-gray-300 text-sm"></ul>
             </div>
         </div>
-
-        <!-- زر تواصل واتساب السريع -->
-        <div class="mt-10 text-center">
-            <a href="https://wa.me/249998040864?text=مرحباً%20منصة%20هاشم%20TV،%20تم%20تحديث%20قوائم%20المنزل%20الرقمي" target="_blank" class="inline-block bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-500 transition">
-                💬 إرسال التقرير عبر واتساب
-            </a>
-        </div>
     </div>
 
     <script>
         const form = document.getElementById('itemForm');
-        const notificationBanner = document.getElementById('notificationBanner');
+        const badge = document.getElementById('notificationBadge');
+        
         let items = JSON.parse(localStorage.getItem('home_os_items')) || [
             {category: 'المطبخ والمخزون', name: 'حليب طازج - محمد'},
-            {category: 'المدرسة والتعليم', name: 'أقلام رصاص ملونة - إيلين'},
+            {category: 'المدرسة والتعليم', name: 'أقلام رصاص - إيلين'},
             {category: 'الصحة والرفاهية', name: 'فيتامين د - الأب'}
         ];
+
+        let unreadCount = parseInt(localStorage.getItem('home_os_unread')) || 0;
+
+        function updateBadge() {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
 
         function renderItems() {
             document.getElementById('list_kitchen').innerHTML = '';
@@ -89,31 +97,42 @@
 
             items.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.className = 'flex justify-between items-center bg-gray-800 p-2 rounded-lg';
-                li.innerHTML = `<span>${item.name}</span> <button onclick="removeItem(${index})" class="text-red-400 hover:text-red-300 text-xs">حذف</button>`;
+                li.className = 'flex justify-between items-center bg-gray-800 p-2.5 rounded-lg border border-gray-700/50';
+                li.innerHTML = `<span>${item.name}</span> <button onclick="removeItem(${index})" class="text-red-400 hover:text-red-300 text-xs bg-red-950/40 px-2 py-1 rounded">إنجاز / حذف</button>`;
                 
                 if(item.category === 'المطبخ والمخزون') document.getElementById('list_kitchen').appendChild(li);
                 if(item.category === 'المدرسة والتعليم') document.getElementById('list_school').appendChild(li);
                 if(item.category === 'الصحة والرفاهية') document.getElementById('list_health').appendChild(li);
             });
             localStorage.setItem('home_os_items', JSON.stringify(items));
+            updateBadge();
         }
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const category = document.getElementById('itemCategory').value;
             const name = document.getElementById('itemName').value;
+            
             items.push({category, name});
             document.getElementById('itemName').value = '';
             
-            // إظهار تنبيه الإشعار عند الإضافة
-            notificationBanner.classList.remove('hidden');
+            // زيادة عداد الإشعارات الفورية
+            unreadCount++;
+            localStorage.setItem('home_os_unread', unreadCount);
             
             renderItems();
+            alert('✅ تم إرسال الإشعار والطلب بنجاح إلى لوحة التحكم!');
         });
 
-        function dismissNotification() {
-            notificationBanner.classList.add('hidden');
+        function toggleNotifications() {
+            if (unreadCount > 0) {
+                alert(`لديك ${unreadCount} تنبيهات جديدة تمت إضافتها لقوائم المنزل.`);
+                unreadCount = 0;
+                localStorage.setItem('home_os_unread', unreadCount);
+                updateBadge();
+            } else {
+                alert('لا توجد إشعارات جديدة في الوقت الحالي.');
+            }
         }
 
         function removeItem(index) {
