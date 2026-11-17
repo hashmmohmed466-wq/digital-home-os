@@ -1,78 +1,209 @@
-// رابط Web App الخاص بك على جوجل
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8yqc-_w7bTavVZHK43pwHbHsmhgtXtiYLGk66h3GnObA4Y8HRXVn6EgpavY8O1puUbw/exec";
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منزل الرقمي (Digital Home OS)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #161b22;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #58a6ff;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #8b949e;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background: #0d1117;
+            color: #c9d1d9;
+            box-sizing: border-box;
+        }
+        button.submit-btn {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button.submit-btn:hover {
+            background-color: #2ea043;
+        }
+        .request-card {
+            background: #21262d;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-right: 4px solid #58a6ff;
+        }
+        .badge {
+            background: #388bfd;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
 
-// 1. دالة إرسال الطلب (تستخدمها واجهة الزوجة/الأبناء عند النقر على إرسال)
-function sendHomeRequest(category, name) {
-    const requestData = {
-        action: 'add',         // الإجراء: إضافة طلب جديد
-        category: category,    // القسم المحدد
-        name: name,            // اسم الطلب أو العنصر
-        id: 'req_' + Date.now() // معرف فريد لكل طلب
-    };
+    <div class="container">
+        <h1>منزل الرقمي (Digital Home OS) 🏠</h1>
+        <p style="text-align: center; color: #8b949e;">إدارة شؤون الأسرة بذكاء لحظي</p>
 
-    fetch(SCRIPT_URL, {
-        method: 'POST',        // طريقة الإرسال
-        mode: 'no-cors',       // تجاوز قيود المتصفح مع جوجل شيت
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(() => {
-        alert('تم إرسال الطلب إلى لوحة المدير بنجاح! 🚀');
-    })
-    .catch((error) => {
-        console.error('خطأ في إرسال الطلب:', error);
-        alert('حدث خطأ أثناء إرسال الطلب.');
-    });
-}
+        <!-- نموذج إرسال الطلب (للزوجه / الأبناء) -->
+        <div id="request-form-section">
+            <h3>أهلاً بك! هل لاحظت شيئاً ناقصاً بالمنزل؟</h3>
+            <div class="form-group">
+                <label>اختر القسم:</label>
+                <select id="category-select">
+                    <option value="المدرسة والتعليم">📚 المدرسة والتعليم</option>
+                    <option value="المقاضي والمنزل">🛒 المقاضي والمنزل</option>
+                    <option value="الصحة والأدوية">💊 الصحة والأدوية</option>
+                    <option value="أخرى">⚡ أخرى</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>اسم العنصر أو الطلب (مثال: حليب طازج - إيلين):</label>
+                <input type="text" id="item-input" placeholder="اكتب الطلب هنا...">
+            </div>
 
-// 2. دالة جلب الطلبات وعرضها في لوحة المدير
-function fetchManagerRequests() {
-    fetch(SCRIPT_URL)
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('manager-requests-container');
-            if (container) {
-                container.innerHTML = ''; // تفريغ القائمة القديمة
-                data.forEach(item => {
-                    container.innerHTML += `
-                        <div class="request-card">
-                            <span class="badge">${item.category}</span>
-                            <p><strong>الطلب:</strong> ${item.name}</p>
-                            <small>${item.timestamp}</small>
-                            <button onclick="deleteRequest('${item.id}')">حذف / تم</button>
-                        </div>
-                    `;
-                });
+            <button class="submit-btn" onclick="submitRequest()">إرسال الطلب للمنزل 🚀</button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #30363d; margin: 25px 0;">
+
+        <!-- لوحة المدير (تظهر الطلبات الواردة هنا وتتزامن تلقائياً) -->
+        <div id="manager-section">
+            <h3>📋 لوحة تحكم المدير (الطلبات الواردة)</h3>
+            <div id="manager-requests-container">
+                <p style="color: #8b949e; text-align: center;">جاري جلب الطلبات...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- كود الجافاسكريبت البرمجي المسؤول عن المزامنة والإرسال -->
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8yqc-_w7bTavVZHK43pwHbHsmhgtXtiYLGk66h3GnObA4Y8HRXVn6EgpavY8O1puUbw/exec";
+
+        // 1. دالة إرسال الطلب من واجهة الزوجة/الأبناء
+        function submitRequest() {
+            const category = document.getElementById('category-select').value;
+            const name = document.getElementById('item-input').value;
+
+            if (!name.trim()) {
+                alert('الرجاء كتابة اسم الطلب أولاً!');
+                return;
             }
-        })
-        .catch(error => console.error('خطأ في جلب الطلبات:', error));
-}
 
-// 3. دالة حذف الطلب من لوحة المدير عند إنجازه
-function deleteRequest(id) {
-    const requestData = {
-        action: 'delete', // الإجراء: حذف الطلب
-        id: id            // معرف الطلب المراد حذفه
-    };
+            const requestData = {
+                action: 'add',
+                category: category,
+                name: name,
+                id: 'req_' + Date.now()
+            };
 
-    fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(() => {
-        // تحديث القائمة بعد ثانية واحدة من الحذف
-        setTimeout(fetchManagerRequests, 1000);
-    })
-    .catch(error => console.error('خطأ في الحذف:', error));
-}
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(() => {
+                alert('تم إرسال الطلب إلى لوحة المدير بنجاح! 🚀');
+                document.getElementById('item-input').value = ''; // تفريغ الخانة
+            })
+            .catch((error) => {
+                console.error('خطأ في إرسال الطلب:', error);
+                alert('حدث خطأ أثناء إرسال الطلب.');
+            });
+        }
 
-// تحديث لوحة المدير تلقائياً كل 5 ثوانٍ لتصلك طلبات الزوجة فوراً دون الحاجة لتحديث الصفحة
-if (window.location.href.includes('manager') || document.getElementById('manager-requests-container')) {
-    setInterval(fetchManagerRequests, 5000);
-}
+        // 2. دالة جلب الطلبات وعرضها في لوحة المدير
+        function fetchManagerRequests() {
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('manager-requests-container');
+                    if (container) {
+                        if (data.length === 0) {
+                            container.innerHTML = '<p style="color: #8b949e; text-align: center;">لا توجد طلبات جديدة حالياً.</p>';
+                            return;
+                        }
+                        container.innerHTML = '';
+                        data.forEach(item => {
+                            container.innerHTML += `
+                                <div class="request-card">
+                                    <span class="badge">${item.category}</span>
+                                    <p style="margin: 8px 0;"><strong>الطلب:</strong> ${item.name}</p>
+                                    <small style="color: #8b949e;">${item.timestamp}</small>
+                                    <br><br>
+                                    <button onclick="deleteRequest('${item.id}')" style="background: #da3633; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">حذف / تم الإنجاز</button>
+                                </div>
+                            `;
+                        });
+                    }
+                })
+                .catch(error => console.error('خطأ في جلب الطلبات:', error));
+        }
+
+        // 3. دالة حذف الطلب عند إنجازه من لوحة المدير
+        function deleteRequest(id) {
+            const requestData = {
+                action: 'delete',
+                id: id
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(() => {
+                setTimeout(fetchManagerRequests, 1000); // تحديث القائمة بعد ثانية
+            })
+            .catch(error => console.error('خطأ في الحذف:', error));
+        }
+
+        // تشغيل الجلب التلقائي للطلبات كل 5 ثوانٍ لضمان المزامنة الفورية للمدير
+        setInterval(fetchManagerRequests, 5000);
+        
+        // جلب الطلبات مباشرة عند فتح الصفحة
+        window.onload = fetchManagerRequests;
+    </script>
+</body>
+</html>
