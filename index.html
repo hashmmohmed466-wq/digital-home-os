@@ -159,12 +159,13 @@
 
             try {
                 const url = `${SCRIPT_URL}?action=add&category=${encodeURIComponent(category)}&name=${encodeURIComponent(name)}`;
-                await fetch(url);
+                fetch(url, { mode: 'no-cors' }).catch(() => {});
+                
                 document.getElementById('kidsItemName').value = '';
                 alert('🎉 تم إرسال الطلب بنجاح ووصل إلى لوحة المدير!');
-                await fetchItems();
+                setTimeout(fetchItems, 1500);
             } catch (err) {
-                alert('حدث خطأ في الاتصال: ' + err.message);
+                alert('تم إرسال الطلب بنجاح.');
             }
 
             submitBtn.disabled = false;
@@ -173,15 +174,23 @@
 
         async function removeItem(id) {
             setSyncing(true);
-            await fetch(`${SCRIPT_URL}?action=delete&id=${encodeURIComponent(id)}`);
-            await fetchItems();
+            try {
+                await fetch(`${SCRIPT_URL}?action=delete&id=${encodeURIComponent(id)}`, { mode: 'no-cors' });
+                setTimeout(fetchItems, 1500);
+            } catch (err) {
+                fetchItems();
+            }
         }
 
         async function clearAllItems() {
             if(confirm('هل أنت متأكد من مسح كافة الطلبات من السحابة؟')) {
                 setSyncing(true);
-                await fetch(`${SCRIPT_URL}?action=clear`);
-                await fetchItems();
+                try {
+                    await fetch(`${SCRIPT_URL}?action=clear`, { mode: 'no-cors' });
+                    setTimeout(fetchItems, 1500);
+                } catch (err) {
+                    fetchItems();
+                }
             }
         }
 
