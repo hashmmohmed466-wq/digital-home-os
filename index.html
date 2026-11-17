@@ -161,11 +161,13 @@
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: 'add', category, name })
                 });
                 document.getElementById('kidsItemName').value = '';
                 alert('🎉 تم إرسال الطلب بنجاح ووصل إلى لوحة المدير!');
-                await fetchItems();
+                setTimeout(fetchItems, 1200);
             } catch (err) {
                 alert('حدث خطأ في الاتصال، تأكد من الإنترنت.');
             }
@@ -178,9 +180,11 @@
             setSyncing(true);
             await fetch(SCRIPT_URL, {
                 method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'delete', id })
             });
-            await fetchItems();
+            setTimeout(fetchItems, 1200);
         }
 
         async function clearAllItems() {
@@ -188,9 +192,11 @@
                 setSyncing(true);
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: 'clear' })
                 });
-                await fetchItems();
+                setTimeout(fetchItems, 1200);
             }
         }
 
