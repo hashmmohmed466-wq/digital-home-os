@@ -96,7 +96,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykWrxniEAPAms8mTSPE4a1pp8uYwV9SX1s0AdIiF6htbJfuY-Fdv6P6xnUgZ4XiIClhA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8yqc-_w7bTavVZHK43pwHbHsmhgtXtiYLGk66h3GnObA4Y8HRXVn6EgpavY8O1puUbw/exec";
 
         const kidsForm = document.getElementById('kidsForm');
         const kidsView = document.getElementById('kidsView');
@@ -159,10 +159,10 @@
 
             try {
                 const url = `${SCRIPT_URL}?action=add&category=${encodeURIComponent(category)}&name=${encodeURIComponent(name)}`;
-                fetch(url, { mode: 'no-cors' }).catch(() => {});
+                await fetch(url, { method: 'GET', mode: 'no-cors' });
                 
                 document.getElementById('kidsItemName').value = '';
-                alert('🎉 تم إرسال الطلب بنجاح ووصل إلى لوحة المدير!');
+                alert('🎉 تم إرسال الطلب بنجاح ووصل إلى السحابة والمدير!');
                 setTimeout(fetchItems, 1500);
             } catch (err) {
                 alert('تم إرسال الطلب بنجاح.');
@@ -175,7 +175,7 @@
         async function removeItem(id) {
             setSyncing(true);
             try {
-                await fetch(`${SCRIPT_URL}?action=delete&id=${encodeURIComponent(id)}`, { mode: 'no-cors' });
+                await fetch(`${SCRIPT_URL}?action=delete&id=${encodeURIComponent(id)}`, { method: 'GET', mode: 'no-cors' });
                 setTimeout(fetchItems, 1500);
             } catch (err) {
                 fetchItems();
@@ -186,7 +186,7 @@
             if(confirm('هل أنت متأكد من مسح كافة الطلبات من السحابة؟')) {
                 setSyncing(true);
                 try {
-                    await fetch(`${SCRIPT_URL}?action=clear`, { mode: 'no-cors' });
+                    await fetch(`${SCRIPT_URL}?action=clear`, { method: 'GET', mode: 'no-cors' });
                     setTimeout(fetchItems, 1500);
                 } catch (err) {
                     fetchItems();
