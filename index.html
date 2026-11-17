@@ -1,216 +1,82 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام المنزل الرقمي السحابي - منصة هاشم TV</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#0A0E1A',
-                        cyanAccent: '#00F0FF',
-                        goldAccent: '#FFB703',
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-darkBg text-white font-sans min-h-screen p-4 md:p-6">
-    <div class="max-w-4xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-800 pb-4 gap-4">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-cyanAccent mb-1">🏠 منزل الرقمي السحابي</h1>
-                <p class="text-gray-400 text-sm">منصة هاشم TV — مزامنة لحظية بين هواتف الأسرة</p>
-            </div>
+// استبدل هذا الرابط برابط الـ Web App الجديد الذي نسخته من جوجل
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8yqc-_w7bTavVZHK43pwHbHsmhgtXtiYLGk66h3GnObA4Y8HRXVn6EgpavY8O1puUbw/exec";
+
+// 1. دالة إرسال الطلب (تستخدمها واجهة الأبناء/الزوجة عند الضغط على إرسال)
+function sendHomeRequest(category, name) {
+    const requestData = {
+        action: 'add',
+        category: category,
+        name: name,
+        id: 'req_' + Date.now()
+    };
+
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', // مهم لتجاوز قيود متصفحات الويب مع جوجل شيت
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(() => {
+        alert('تم إرسال الطلب إلى لوحة المدير بنجاح! 🚀');
+    })
+    .catch((error) => {
+        console.error('خطأ في إرسال الطلب:', error);
+        alert('حدث خطأ أثناء إرسال الطلب، تأكد من الاتصال.');
+    });
+}
+
+// 2. دالة جلب الطلبات وعرضها في لوحة المدير
+function fetchManagerRequests() {
+    fetch(SCRIPT_URL)
+        .then(response => response.json())
+        .then(data => {
+            console.log("الطلبات الواردة:", data);
             
-            <div class="flex items-center gap-3">
-                <button onclick="switchView('kids')" id="kidsBtn" class="bg-cyanAccent text-darkBg text-sm px-4 py-2 rounded-lg font-bold transition">👶 واجهة الأسرة</button>
-                <button onclick="switchView('admin')" id="adminBtn" class="bg-gray-800 border border-gray-700 text-sm px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition">⚙️ لوحة المدير</button>
-                
-                <button onclick="fetchItems()" title="تحديث البيانات" class="relative bg-gray-800 border border-gray-700 p-2.5 rounded-lg hover:bg-gray-700 transition">
-                    🔔
-                    <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
-                </button>
-            </div>
-        </header>
-
-        <div id="syncStatus" class="text-center text-xs text-cyanAccent mb-4 hidden">⏳ جاري المزامنة مع السحابة...</div>
-
-        <!-- 1. واجهة الأسرة والأبناء -->
-        <div id="kidsView" class="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-xl mb-8">
-            <h2 class="text-xl font-semibold text-goldAccent mb-2">👋 أهلاً بكم! هل هناك طلب أو غرض ناقص بالمنزل؟</h2>
-            <p class="text-gray-400 text-sm mb-6">سيصل طلبك مباشرة إلى هاتف المدير في نفس اللحظة.</p>
-            
-            <form id="kidsForm" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm text-gray-300 mb-1">اختر القسم:</label>
-                        <select id="kidsCategory" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
-                            <option value="المطبخ والمخزون">🛒 المطبخ والمخزون</option>
-                            <option value="المدرسة والتعليم">📚 المدرسة والتعليم</option>
-                            <option value="الصحة والرفاهية">💊 الصحة والرفاهية</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-300 mb-1">اكتب الطلب والاسم (مثال: حليب - إيلين):</label>
-                        <input type="text" id="kidsItemName" placeholder="اكتب الطلب هنا..." required class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
-                    </div>
-                </div>
-                <button type="submit" id="submitBtn" class="w-full bg-cyanAccent text-darkBg font-bold py-3.5 rounded-xl hover:bg-opacity-90 transition shadow-lg text-lg">إرسال الطلب للسحابة 🚀</button>
-            </form>
-        </div>
-
-        <!-- 2. لوحة تحكم المدير -->
-        <div id="adminView" class="hidden space-y-6">
-            <div class="bg-gray-900 border border-gray-800 p-4 rounded-xl flex flex-wrap justify-between items-center gap-2">
-                <span class="text-goldAccent font-semibold">📋 قائمة المتابعة السحابية للمنزل</span>
-                <div class="flex gap-2">
-                    <button onclick="fetchItems()" class="text-cyanAccent hover:text-white text-xs bg-cyan-950/40 px-3 py-1.5 rounded-lg border border-cyan-800">🔄 تحديث الآن</button>
-                    <button onclick="clearAllItems()" class="text-red-400 hover:text-red-300 text-xs bg-red-950/40 px-3 py-1.5 rounded-lg border border-red-900">مسح القوائم بالكامل</button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
-                    <h3 class="text-lg font-bold text-cyanAccent mb-3 border-b border-gray-800 pb-2">🛒 المطبخ والمخزون</h3>
-                    <ul id="list_kitchen" class="space-y-2 text-gray-300 text-sm min-h-[120px]"></ul>
-                </div>
-                <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
-                    <h3 class="text-lg font-bold text-cyanAccent mb-3 border-b border-gray-800 pb-2">📚 المدرسة والتعليم</h3>
-                    <ul id="list_school" class="space-y-2 text-gray-300 text-sm min-h-[120px]"></ul>
-                </div>
-                <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
-                    <h3 class="text-lg font-bold text-cyanAccent mb-3 border-b border-gray-800 pb-2">💊 الصحة والرفاهية</h3>
-                    <ul id="list_health" class="space-y-2 text-gray-300 text-sm min-h-[120px]"></ul>
-                </div>
-            </div>
-        </div>
-
-        <footer class="mt-12 text-center text-gray-500 text-xs border-t border-gray-800 pt-6">
-            <p>نظام المنزل الرقمي السحابي — تصميم وتطوير <strong>منصة هاشم TV</strong></p>
-        </footer>
-    </div>
-
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8yqc-_w7bTavVZHK43pwHbHsmhgtXtiYLGk66h3GnObA4Y8HRXVn6EgpavY8O1puUbw/exec";
-
-        const kidsForm = document.getElementById('kidsForm');
-        const kidsView = document.getElementById('kidsView');
-        const adminView = document.getElementById('adminView');
-        const kidsBtn = document.getElementById('kidsBtn');
-        const adminBtn = document.getElementById('adminBtn');
-        const badge = document.getElementById('notificationBadge');
-        const syncStatus = document.getElementById('syncStatus');
-
-        let items = [];
-
-        function setSyncing(state) {
-            if (state) syncStatus.classList.remove('hidden');
-            else syncStatus.classList.add('hidden');
-        }
-
-        async function fetchItems() {
-            setSyncing(true);
-            try {
-                const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
-                items = await res.json();
-                renderItems();
-            } catch (err) {
-                console.error("خطأ في جلب البيانات:", err);
+            // هنا تقوم بتحديث واجهة HTML لعرض الطلبات للمدير
+            // مثال: تفريغ القائمة الحالية وإعادة تعبئتها بالبيانات القادمة من "data"
+            const container = document.getElementById('manager-requests-container');
+            if (container) {
+                container.innerHTML = ''; // تفريغ القائمة القديمة
+                data.forEach(item => {
+                    container.innerHTML += `
+                        <div class="request-card">
+                            <span class="badge">${item.category}</span>
+                            <p><strong>الطلب:</strong> ${item.name}</p>
+                            <small>${item.timestamp}</small>
+                            <button onclick="deleteRequest('${item.id}')">حذف / تم</button>
+                        </div>
+                    `;
+                });
             }
-            setSyncing(false);
-        }
+        })
+        .catch(error => console.error('خطأ في جلب الطلبات:', error));
+}
 
-        function renderItems() {
-            document.getElementById('list_kitchen').innerHTML = '';
-            document.getElementById('list_school').innerHTML = '';
-            document.getElementById('list_health').innerHTML = '';
+// 3. دالة حذف الطلب عند إنجازه من لوحة المدير
+function deleteRequest(id) {
+    const requestData = {
+        action: 'delete',
+        id: id
+    };
 
-            items.forEach((item) => {
-                const li = document.createElement('li');
-                li.className = 'flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700/50';
-                li.innerHTML = `<span class="font-medium">${item.name}</span> <button onclick="removeItem('${item.id}')" class="text-green-400 hover:text-green-300 text-xs bg-green-950/40 px-2.5 py-1 rounded border border-green-900">✔️ إنجاز</button>`;
-                
-                if(item.category === 'المطبخ والمخزون') document.getElementById('list_kitchen').appendChild(li);
-                if(item.category === 'المدرسة والتعليم') document.getElementById('list_school').appendChild(li);
-                if(item.category === 'الصحة والرفاهية') document.getElementById('list_health').appendChild(li);
-            });
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(() => {
+        // تحديث القائمة بعد الحذف
+        setTimeout(fetchManagerRequests, 1000);
+    })
+    .catch(error => console.error('خطأ في الحذف:', error));
+}
 
-            if (items.length > 0) {
-                badge.textContent = items.length;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        kidsForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            const category = document.getElementById('kidsCategory').value;
-            const name = document.getElementById('kidsItemName').value;
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = "⏳ جاري الإرسال للسحابة...";
-
-            try {
-                const url = `${SCRIPT_URL}?action=add&category=${encodeURIComponent(category)}&name=${encodeURIComponent(name)}`;
-                await fetch(url, { method: 'GET', mode: 'no-cors' });
-                
-                document.getElementById('kidsItemName').value = '';
-                alert('🎉 تم إرسال الطلب بنجاح ووصل إلى السحابة والمدير!');
-                setTimeout(fetchItems, 1500);
-            } catch (err) {
-                alert('تم إرسال الطلب بنجاح.');
-            }
-
-            submitBtn.disabled = false;
-            submitBtn.textContent = "إرسال الطلب للسحابة 🚀";
-        });
-
-        async function removeItem(id) {
-            setSyncing(true);
-            try {
-                await fetch(`${SCRIPT_URL}?action=delete&id=${encodeURIComponent(id)}`, { method: 'GET', mode: 'no-cors' });
-                setTimeout(fetchItems, 1500);
-            } catch (err) {
-                fetchItems();
-            }
-        }
-
-        async function clearAllItems() {
-            if(confirm('هل أنت متأكد من مسح كافة الطلبات من السحابة؟')) {
-                setSyncing(true);
-                try {
-                    await fetch(`${SCRIPT_URL}?action=clear`, { method: 'GET', mode: 'no-cors' });
-                    setTimeout(fetchItems, 1500);
-                } catch (err) {
-                    fetchItems();
-                }
-            }
-        }
-
-        function switchView(view) {
-            if (view === 'kids') {
-                kidsView.classList.remove('hidden');
-                adminView.classList.add('hidden');
-                kidsBtn.className = 'bg-cyanAccent text-darkBg text-sm px-4 py-2 rounded-lg font-bold transition';
-                adminBtn.className = 'bg-gray-800 border border-gray-700 text-sm px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition';
-            } else {
-                kidsView.classList.add('hidden');
-                adminView.classList.remove('hidden');
-                adminBtn.className = 'bg-cyanAccent text-darkBg text-sm px-4 py-2 rounded-lg font-bold transition';
-                kidsBtn.className = 'bg-gray-800 border border-gray-700 text-sm px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition';
-                fetchItems();
-            }
-        }
-
-        fetchItems();
-        setInterval(fetchItems, 15000);
-    </script>
-</body>
-</html>
+// إذا كنت في لوحة المدير، يمكنك جعل البيانات تتحدث تلقائياً كل 5 ثوانٍ لتصلك طلبات الزوجة فوراً:
+if (window.location.href.includes('manager') || document.getElementById('manager-requests-container')) {
+    setInterval(fetchManagerRequests, 5000); // جلب البيانات كل 5 ثوانٍ تلقائياً
+}
