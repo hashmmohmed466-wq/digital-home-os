@@ -38,7 +38,6 @@
             </div>
         </header>
 
-        <!-- شريط حالة المزامنة -->
         <div id="syncStatus" class="text-center text-xs text-cyanAccent mb-4 hidden">⏳ جاري المزامنة مع السحابة...</div>
 
         <!-- 1. واجهة الأسرة والأبناء -->
@@ -97,7 +96,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyIcAwird80izCztO2mKN9vxfGBbHlp0j9Hew_x78WUXtVoIaconhSgmxUVjMi3DXHTMg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykWrxniEAPAms8mTSPE4a1pp8uYwV9SX1s0AdIiF6htbJfuY-Fdv6P6xnUgZ4XiIClhA/exec";
 
         const kidsForm = document.getElementById('kidsForm');
         const kidsView = document.getElementById('kidsView');
@@ -117,7 +116,7 @@
         async function fetchItems() {
             setSyncing(true);
             try {
-                const res = await fetch(SCRIPT_URL);
+                const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
                 items = await res.json();
                 renderItems();
             } catch (err) {
@@ -159,17 +158,13 @@
             submitBtn.textContent = "⏳ جاري الإرسال للسحابة...";
 
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'add', category, name })
-                });
+                const url = `${SCRIPT_URL}?action=add&category=${encodeURIComponent(category)}&name=${encodeURIComponent(name)}`;
+                await fetch(url);
                 document.getElementById('kidsItemName').value = '';
                 alert('🎉 تم إرسال الطلب بنجاح ووصل إلى لوحة المدير!');
-                setTimeout(fetchItems, 1200);
+                await fetchItems();
             } catch (err) {
-                alert('حدث خطأ في الاتصال، تأكد من الإنترنت.');
+                alert('حدث خطأ في الاتصال: ' + err.message);
             }
 
             submitBtn.disabled = false;
@@ -178,25 +173,15 @@
 
         async function removeItem(id) {
             setSyncing(true);
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'delete', id })
-            });
-            setTimeout(fetchItems, 1200);
+            await fetch(`${SCRIPT_URL}?action=delete&id=${encodeURIComponent(id)}`);
+            await fetchItems();
         }
 
         async function clearAllItems() {
             if(confirm('هل أنت متأكد من مسح كافة الطلبات من السحابة؟')) {
                 setSyncing(true);
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'clear' })
-                });
-                setTimeout(fetchItems, 1200);
+                await fetch(`${SCRIPT_URL}?action=clear`);
+                await fetchItems();
             }
         }
 
