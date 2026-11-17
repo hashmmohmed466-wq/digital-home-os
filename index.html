@@ -19,60 +19,93 @@
         }
     </script>
 </head>
-<body class="bg-darkBg text-white font-sans min-h-screen p-6">
+<body class="bg-darkBg text-white font-sans min-h-screen p-4 md:p-6">
     <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-10 border-b border-gray-800 pb-4">
+        <!-- شريط العنوان والتبديل بين الواجهات -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-800 pb-4 gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-cyanAccent mb-1">منزل الرقمي (Digital Home OS)</h1>
-                <p class="text-gray-400">لوحة التحكم الذكية — منصة هاشم TV</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-cyanAccent mb-1">🏠 منزل الرقمي (Digital Home OS)</h1>
+                <p class="text-gray-400 text-sm">منصة هاشم TV — إدارة شؤون الأسرة بذكاء لحظي</p>
             </div>
-            <!-- زر الإشعارات الحية مع عداد التنبيهات -->
-            <div class="relative">
-                <button onclick="toggleNotifications()" class="bg-gray-800 border border-gray-700 p-3 rounded-full hover:bg-gray-700 transition relative">
+            
+            <div class="flex items-center gap-3">
+                <button onclick="switchView('kids')" id="kidsBtn" class="bg-gray-800 border border-gray-700 text-sm px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition">👶 واجهة الأبناء</button>
+                <button onclick="switchView('admin')" id="adminBtn" class="bg-cyanAccent text-darkBg text-sm px-4 py-2 rounded-lg font-bold hover:bg-opacity-90 transition">⚙️ لوحة المدير</button>
+                
+                <!-- أيقونة الإشعارات -->
+                <button onclick="showNotifications()" class="relative bg-gray-800 border border-gray-700 p-2.5 rounded-lg hover:bg-gray-700 transition">
                     🔔
                     <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
                 </button>
             </div>
         </header>
 
-        <!-- لوحة الإدخال السريع مع الإرسال الفوري -->
-        <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-xl mb-8">
-            <h2 class="text-xl font-semibold text-goldAccent mb-4">⚡ إرسال طلب أو تنبيه فوري</h2>
-            <form id="itemForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <select id="itemCategory" class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
-                    <option value="المطبخ والمخزون">🛒 المطبخ والمخزون</option>
-                    <option value="المدرسة والتعليم">📚 المدرسة والتعليم</option>
-                    <option value="الصحة والرفاهية">💊 الصحة والرفاهية</option>
-                </select>
-                <input type="text" id="itemName" placeholder="اسم العنصر أو الطلب (مثال: حليب طازج)" required class="bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
-                <button type="submit" class="bg-cyanAccent text-darkBg font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition shadow-lg">إرسال إشعار للنظام 🚀</button>
+        <!-- 1. واجهة الأبناء المبسطة (تظهر افتراضياً للسهولة) -->
+        <div id="kidsView" class="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-xl mb-8">
+            <h2 class="text-xl font-semibold text-goldAccent mb-2">👋 أهلاً بك يا بطل! هل لاحظت شيئاً ناقصاً بالمنزل؟</h2>
+            <p class="text-gray-400 text-sm mb-6">اختر القسم واكتب الطلب وسيوجه فوراً إلى لوحة التحكم بالمنزل.</p>
+            
+            <form id="kidsForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-1">اختر القسم:</label>
+                        <select id="kidsCategory" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
+                            <option value="المطبخ والمخزون">🛒 المطبخ والمخزون</option>
+                            <option value="المدرسة والتعليم">📚 المدرسة والتعليم</option>
+                            <option value="الصحة والرفاهية">💊 الصحة والرفاهية</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-1">اسم العنصر واسمك (مثال: حليب طازج - إيلين):</label>
+                        <input type="text" id="kidsItemName" placeholder="اكتب الطلب هنا..." required class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyanAccent outline-none">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-cyanAccent text-darkBg font-bold py-3.5 rounded-xl hover:bg-opacity-90 transition shadow-lg text-lg">إرسال الطلب للمنزل 🚀</button>
             </form>
         </div>
 
-        <!-- الأقسام الرئيسية -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- قسم المطبخ -->
-            <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
-                <h3 class="text-lg font-bold text-cyanAccent mb-3">🛒 المطبخ والمخزون</h3>
-                <ul id="list_kitchen" class="space-y-2 text-gray-300 text-sm"></ul>
+        <!-- 2. لوحة تحكم المدير (مخفية حتى يتم اختيارها) -->
+        <div id="adminView" class="hidden space-y-6">
+            <div class="bg-gray-900 border border-gray-800 p-4 rounded-xl flex justify-between items-center">
+                <span class="text-goldAccent font-semibold">📋 قائمة المتابعة الشاملة لمدير المنزل</span>
+                <button onclick="clearAllItems()" class="text-red-400 hover:text-red-300 text-xs bg-red-950/40 px-3 py-1.5 rounded-lg border border-red-900">مسح القوائم بالكامل</button>
             </div>
-            <!-- قسم المدرسة -->
-            <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
-                <h3 class="text-lg font-bold text-cyanAccent mb-3">📚 المدرسة والتعليم</h3>
-                <ul id="list_school" class="space-y-2 text-gray-300 text-sm"></ul>
-            </div>
-            <!-- قسم الصحة -->
-            <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
-                <h3 class="text-lg font-bold text-cyanAccent mb-3">💊 الصحة والرفاهية</h3>
-                <ul id="list_health" class="space-y-2 text-gray-300 text-sm"></ul>
+
+            <!-- الأقسام الثلاثة الرئيسية -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- قسم المطبخ -->
+                <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
+                    <h3 class="text-lg font-bold text-cyanAccent mb-3 border-b border-gray-800 pb-2">🛒 المطبخ والمخزون</h3>
+                    <ul id="list_kitchen" class="space-y-2 text-gray-300 text-sm min-h-[120px]"></ul>
+                </div>
+                <!-- قسم المدرسة -->
+                <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
+                    <h3 class="text-lg font-bold text-cyanAccent mb-3 border-b border-gray-800 pb-2">📚 المدرسة والتعليم</h3>
+                    <ul id="list_school" class="space-y-2 text-gray-300 text-sm min-h-[120px]"></ul>
+                </div>
+                <!-- قسم الصحة -->
+                <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl">
+                    <h3 class="text-lg font-bold text-cyanAccent mb-3 border-b border-gray-800 pb-2">💊 الصحة والرفاهية</h3>
+                    <ul id="list_health" class="space-y-2 text-gray-300 text-sm min-h-[120px]"></ul>
+                </div>
             </div>
         </div>
+
+        <!-- تذييل الصفحة -->
+        <footer class="mt-12 text-center text-gray-500 text-xs border-t border-gray-800 pt-6">
+            <p>نظام المنزل الرقمي المتقدم — تصميم وتطوير <strong>منصة هاشم TV</strong></p>
+        </footer>
     </div>
 
     <script>
-        const form = document.getElementById('itemForm');
+        const kidsForm = document.getElementById('kidsForm');
+        const kidsView = document.getElementById('kidsView');
+        const adminView = document.getElementById('adminView');
+        const kidsBtn = document.getElementById('kidsBtn');
+        const adminBtn = document.getElementById('adminBtn');
         const badge = document.getElementById('notificationBadge');
-        
+
+        // جلب البيانات أو البدء بقوائم افتراضية
         let items = JSON.parse(localStorage.getItem('home_os_items')) || [
             {category: 'المطبخ والمخزون', name: 'حليب طازج - محمد'},
             {category: 'المدرسة والتعليم', name: 'أقلام رصاص - إيلين'},
@@ -90,6 +123,25 @@
             }
         }
 
+        function switchView(view) {
+            if (view === 'kids') {
+                kidsView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                kidsBtn.className = 'bg-cyanAccent text-darkBg text-sm px-4 py-2 rounded-lg font-bold transition';
+                adminBtn.className = 'bg-gray-800 border border-gray-700 text-sm px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition';
+            } else {
+                kidsView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                adminBtn.className = 'bg-cyanAccent text-darkBg text-sm px-4 py-2 rounded-lg font-bold transition';
+                kidsBtn.className = 'bg-gray-800 border border-gray-700 text-sm px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition';
+                
+                // عند فتح لوحة المدير تصفير الإشعارات المقروءة
+                unreadCount = 0;
+                localStorage.setItem('home_os_unread', unreadCount);
+                updateBadge();
+            }
+        }
+
         function renderItems() {
             document.getElementById('list_kitchen').innerHTML = '';
             document.getElementById('list_school').innerHTML = '';
@@ -97,8 +149,8 @@
 
             items.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.className = 'flex justify-between items-center bg-gray-800 p-2.5 rounded-lg border border-gray-700/50';
-                li.innerHTML = `<span>${item.name}</span> <button onclick="removeItem(${index})" class="text-red-400 hover:text-red-300 text-xs bg-red-950/40 px-2 py-1 rounded">إنجاز / حذف</button>`;
+                li.className = 'flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700/50';
+                li.innerHTML = `<span class="font-medium">${item.name}</span> <button onclick="removeItem(${index})" class="text-green-400 hover:text-green-300 text-xs bg-green-950/40 px-2.5 py-1 rounded border border-green-900">✔️ إنجاز</button>`;
                 
                 if(item.category === 'المطبخ والمخزون') document.getElementById('list_kitchen').appendChild(li);
                 if(item.category === 'المدرسة والتعليم') document.getElementById('list_school').appendChild(li);
@@ -108,36 +160,40 @@
             updateBadge();
         }
 
-        form.addEventListener('submit', (e) => {
+        kidsForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const category = document.getElementById('itemCategory').value;
-            const name = document.getElementById('itemName').value;
+            const category = document.getElementById('kidsCategory').value;
+            const name = document.getElementById('kidsItemName').value;
             
             items.push({category, name});
-            document.getElementById('itemName').value = '';
+            document.getElementById('kidsItemName').value = '';
             
-            // زيادة عداد الإشعارات الفورية
+            // زيادة عدد الإشعارات للمدير
             unreadCount++;
             localStorage.setItem('home_os_unread', unreadCount);
             
             renderItems();
-            alert('✅ تم إرسال الإشعار والطلب بنجاح إلى لوحة التحكم!');
+            alert('🎉 تم إرسال طلبك بنجاح إلى لوحة تحكم المنزل!');
         });
 
-        function toggleNotifications() {
+        function showNotifications() {
             if (unreadCount > 0) {
-                alert(`لديك ${unreadCount} تنبيهات جديدة تمت إضافتها لقوائم المنزل.`);
-                unreadCount = 0;
-                localStorage.setItem('home_os_unread', unreadCount);
-                updateBadge();
+                alert(`لديك ${unreadCount} طلبات جديدة أضافها الأبناء! اضغط على (لوحة المدير) لمراجعتها.`);
             } else {
-                alert('لا توجد إشعارات جديدة في الوقت الحالي.');
+                alert('لا توجد طلبات جديدة معلقة حالياً.');
             }
         }
 
         function removeItem(index) {
             items.splice(index, 1);
             renderItems();
+        }
+
+        function clearAllItems() {
+            if(confirm('هل أنت متأكد من مسح كافة الطلبات؟')) {
+                items = [];
+                renderItems();
+            }
         }
 
         renderItems();
